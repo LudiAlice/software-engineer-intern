@@ -1,10 +1,11 @@
 # Tool usage record
 
-Complete the table before submission. Include AI assistants, search engines, documentation sources, and open-source code that influenced the implementation. Replace the example rows and add rows as needed.
-
-| Tool or source | Use | Files materially influenced |
+| Tool/source | Use | Affected files |
 |---|---|---|
-| [AI assistant name] | [Task and contribution] | [File paths] |
-| [Documentation, search engine, or open-source source] | [Information or code used] | [File paths, or `Not applicable`] |
+| OpenAI Codex | Baseline implementation, guided review, test assistance and module packaging | q1_api/app/, q1_api/tests/, documentation |
+| Supplied exercise and mock contracts | Required behavior and repository structure | Q1 application and tests |
+| Python sqlite3 | Persistence and transactions | q1_api/app/db.py, main.py |
+| FastAPI/Pydantic | Request validation and HTTP routing | q1_api/app/main.py |
+| pytest and HTTPX TestClient | API and validation tests | q1_api/tests/ |
 
-Record AI interactions that influenced design or generated code in [AI_LOG.md](AI_LOG.md).
+See AI_LOG.md for material AI contributions. No actual local .env file is included.

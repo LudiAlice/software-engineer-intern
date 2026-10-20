@@ -1,1 +1,1 @@
-"""Application package for securities account identity verification."""
+"""Identity verification application."""

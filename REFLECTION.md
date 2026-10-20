@@ -1,45 +1,21 @@
 # Implementation reflection
 
-Complete each section before submission. Replace bracketed prompts with decisions, measurements, or evidence. Use `Not completed` or `Not measured` where applicable, and explain the gap.
+## Design decisions
 
-## 1. Design decisions
+SQLite with WAL avoids an extra service for this exercise. Foreign keys and a unique (batch_id, case_ref) constraint preserve relationships. BEGIN IMMEDIATE keeps review validation and update inside one serialized write transaction.
 
-| Decision | Rationale |
-|---|---|
-| Database | [Name the database and explain the choice.] |
-| Background OCR processing | [Describe how work is scheduled and how interrupted cases are processed again. Explain the approach.] |
-| Review state machine | [Identify the module that owns transition rules and explain the organization.] |
-| Delivery idempotency key | [Identify the source of the key. Explain why retries reuse it and different exports receive different keys.] |
+Uploads are multipart UTF-8 CSV, limited to 5 MiB. Invalid documents return 422; invalid rows retain line numbers and reasons while valid rows are saved. Dates must be real YYYY-MM-DD values; issue dates earlier than birth dates are rejected, and equal dates are accepted. The first occurrence reserves a case reference within the batch, even if that row is invalid.
 
-## 2. Mock observations and retry configuration
+Review rules live in app/state_machine.py. Both rejection states are terminal. Invalid transitions return 409; malformed review parameters return 422. OCR is not invoked by this Q1-only version: review tests prepare ocr_done explicitly.
 
-| Item | Measurement or decision |
-|---|---|
-| Observed OCR failure rates | [Record attempt counts and outcome rates. Describe the measurement method and test configuration.] |
-| OCR timeout | [Record the timeout in seconds and explain the value using observations.] |
-| Retry limit | [Record the attempt limit and backoff behavior.] |
-| Exhausted retries | [Describe the stored status and reason, how staff find failed cases, and the next operational action.] |
+## Verification
 
-## 3. Verification evidence
+The isolated module passed 25 pytest tests covering import validation, sample counts, pagination/filtering, successful review, invalid and repeated transitions, terminal rejections, concurrent review and missing resources. A Starlette TestClient/HTTPX deprecation warning remains.
 
-Provide command output, excerpts, or links to artifacts for each check.
+## AI-generated code requiring further review
 
-### OCR recovery
+The candidate has reviewed Q1 with Codex and made guided code/test changes. Further independent practice is needed with transaction concurrency and framework lifecycle behavior. See AI_LOG.md for provenance and contributions.
 
-[Include `/debug/requests` records and a final-state comparison between a clean run and a run interrupted by a worker termination, then processed again. State the result.]
+## Incomplete work and next steps
 
-### Account-opening submission
-
-[Include `/debug/deliveries` records showing exactly one ingestion per export, including delivery retries after a lost response.]
-
-### Backup retention
-
-[Include before-and-after file listings showing that only the seven most recent backups remain.]
-
-## 4. AI-generated code requiring further review
-
-[Identify AI-generated code you do not fully understand. Include file paths, the behavior in question, and the review still needed. Enter `None` if applicable.]
-
-## 5. Incomplete work and next steps
-
-[List unfinished requirements, known failures, and their effect on the workflow. Describe what you would address with one additional day.]
+This commit implements Q1 only. OCR integration/recovery, export delivery, container operations and CI are not delivered here. Mock measurements, recovery evidence and backup evidence will accompany the corresponding modules. With additional time, verify those modules and the final clean-clone workflow rather than add unrelated features.
