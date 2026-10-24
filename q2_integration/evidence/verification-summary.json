@@ -1,0 +1,26 @@
+{
+  "date_hong_kong": "2026-10-24",
+  "scope": "Q1 + Q2 publication checkout; excludes learning-only return action and Q3 implementation",
+  "pytest": {
+    "command": "python -B -m pytest q1_api/ -q -p no:cacheprovider --basetemp <unique-workspace-temp>",
+    "passed": 32,
+    "warnings": [
+      "Starlette TestClient/HTTPX deprecation"
+    ],
+    "exit_code": 0
+  },
+  "runtime": {
+    "python": "3.12.13",
+    "dependencies": {
+      "fastapi": "0.143.1",
+      "uvicorn": "0.54.0",
+      "python-multipart": "0.0.32",
+      "httpx": "0.28.1",
+      "pytest": "9.1.1"
+    },
+    "note": "Used the existing local virtual environment; not a new dependency installation or final clean clone."
+  },
+  "live_report": "live-validation.json",
+  "source_hashes_verified": true,
+  "candidate_assessment": "Correctly explained approved-only export, database file storage, stable bytes/key on retry, receiver deduplication, and a new identity for later approvals; guided assertion work, not unaided implementation mastery."
+}

@@ -7,12 +7,14 @@ import os
 import sqlite3
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, Query, UploadFile
+from fastapi import FastAPI, HTTPException, Query, UploadFile, Response
 from pydantic import BaseModel, ConfigDict
 
 from .db import connect, initialize
 from .state_machine import STATUSES, next_status
 from .validation import FIELDS, parse_csv
+from .integrations import Jobs, Settings
+from .exports import create_export, export_summary
 
 MAX_UPLOAD = 5 * 1024 * 1024
 
@@ -41,16 +43,21 @@ def batch_summary(path, batch_id):
                 "rejected": len(rejected), "rejected_rows": rejected, "counts": counts}
 
 
-def create_app(database_path=None):
+def create_app(database_path=None, *, settings=None, transport=None):
     path = str(database_path or os.environ.get("DATABASE_PATH") or
                Path(__file__).resolve().parents[2] / "runtime" / "app.db")
 
     @asynccontextmanager
     async def lifespan(application):
         initialize(path)
-        yield
+        application.state.jobs = Jobs(path, settings or Settings.from_environment(), transport)
+        try:
+            yield
+        finally:
+            application.state.jobs.close()
 
-    application = FastAPI(title="Identity Verification", lifespan=lifespan)
+    application = FastAPI(title="Identity Verification", lifespan=lifespan,
+                          docs_url="/api/docs", openapi_url="/api/openapi.json", redoc_url=None)
     application.state.database_path = path
 
     @application.get("/api/health")
@@ -88,7 +95,9 @@ def create_app(database_path=None):
 
     @application.get("/api/batches/{batch_id}")
     def get_batch(batch_id: str):
-        return batch_summary(path, batch_id)
+        result = batch_summary(path, batch_id)
+        result["processing"] = application.state.jobs.busy("ocr:" + batch_id)
+        return result
 
     @application.get("/api/batches/{batch_id}/cases")
     def list_cases(batch_id: str, status: str | None = None,
@@ -124,6 +133,58 @@ def create_app(database_path=None):
                 raise HTTPException(409, str(exc)) from None
             db.execute("UPDATE cases SET status=? WHERE id=? AND status=?", (target, case_id, case["status"]))
         return {"id": case_id, "status": target}
+
+    @application.post("/api/batches/{batch_id}/process", status_code=202)
+    def process_batch(batch_id: str, retry_failed: bool = False):
+        result = batch_summary(path, batch_id)
+        jobs = application.state.jobs
+        result["scheduled"] = jobs.submit("ocr:" + batch_id, jobs.process_batch, batch_id, retry_failed)
+        result["processing"] = jobs.busy("ocr:" + batch_id)
+        return result
+
+    @application.post("/api/batches/{batch_id}/export", status_code=202)
+    def export_batch(batch_id: str):
+        with connect(path) as db:
+            require_batch(db, batch_id)
+        ident = create_export(path, batch_id)
+        if ident is None:
+            with connect(path) as db:
+                pending = [row[0] for row in db.execute("SELECT id FROM exports WHERE batch_id=? AND status!='delivered'", (batch_id,))]
+            return {"export": None, "message": "No newly approved cases", "undelivered_exports": pending}
+        jobs = application.state.jobs
+        jobs.submit("delivery:" + ident, jobs.deliver, ident)
+        return {"export": export_summary(path, ident)}
+
+    @application.get("/api/batches/{batch_id}/exports")
+    def list_exports(batch_id: str):
+        with connect(path) as db:
+            require_batch(db, batch_id)
+            ids = [row[0] for row in db.execute("SELECT id FROM exports WHERE batch_id=? ORDER BY created_at,id", (batch_id,))]
+        return {"items": [export_summary(path, ident) for ident in ids]}
+
+    @application.get("/api/exports/{export_id}")
+    def get_export(export_id: str):
+        result = export_summary(path, export_id)
+        if result is None:
+            raise HTTPException(404, "Export not found")
+        return result
+
+    @application.post("/api/exports/{export_id}/deliver", status_code=202)
+    def retry_delivery(export_id: str):
+        result = get_export(export_id)
+        jobs = application.state.jobs
+        result["scheduled"] = (result["status"] != "delivered" and
+                               jobs.submit("delivery:" + export_id, jobs.deliver, export_id))
+        return result
+
+    @application.get("/api/exports/{export_id}/download")
+    def download(export_id: str):
+        with connect(path) as db:
+            row = db.execute("SELECT file_name,content FROM exports WHERE id=?", (export_id,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "Export not found")
+        return Response(bytes(row["content"]), media_type="text/csv",
+                        headers={"Content-Disposition": f'attachment; filename="{row["file_name"]}"'})
 
     return application
 

@@ -14,7 +14,7 @@ cd q1_api
 uvicorn app.main:app --reload
 ```
 
-The scaffold exposes `GET /api/health`. Complete the remaining endpoints before testing the application workflow.
+The application implements import, batch/case queries and two-stage review. Q2 adds background OCR and export delivery; see [Q2 instructions](../q2_integration/README.md) to run both external mocks.
 
 ## Run tests
 
@@ -24,4 +24,4 @@ From the repository root:
 python -m pytest q1_api/
 ```
 
-Replace the scaffold import test with tests covering the required behavior. The suite must pass from a clean checkout.
+Tests cover Q1 validation/review and Q2 integrations. API tests use temporary SQLite databases; mocked integration tests do not require external services.
