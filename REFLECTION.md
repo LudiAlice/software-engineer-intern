@@ -45,4 +45,42 @@ The baseline implementation and most tests were AI-assisted. The candidate revie
 
 ## Incomplete work and next steps
 
-This staged submission delivers Q1 and Q2. Q3 container operations, backup/restore, CI and final clean-clone verification remain for the next module. No final submission email has been sent. With additional time, review these remaining operational steps and production limitations rather than add unrelated features.
+This module adds Q3 to the published Q1/Q2 baseline. CI is the chosen optional task and is being published separately; final remote-clone verification and the Actions result for the final commit remain to be checked. No final submission email has been sent.
+
+## Subsequent candidate practice: Q3 publication preparation (2026-10-24)
+
+The candidate has now performed guided local and container validation in the full learning checkout. The manual local batch accepted 43 rows and rejected seven; OCR ended with 37 successful and six failed cases. One case was approved through both stages, exported, delivered after two attempts and downloaded. The receiver debug response contained one ingestion for that export. A separate local smoke run exported 38 cases. These are separate runs, not contradictory counts.
+
+All four Compose services became healthy. The candidate executed the smoke driver inside the API container through http://nginx; it completed with 37 exported, six ocr_failed and zero pending. The candidate then created backup-20261024T135048736350Z-ecabe311.sqlite3, stopped API writes and restored that named backup to /data/app.db. SQLite integrity_check returned ok. After restart, /api/ready returned true and export 236004da-065f-4a4c-be62-ecfaf65eb75a still reported delivered, case_count 37 and delivery_attempts 2.
+
+The screenshot-supported observations and complete visible after-backup list are in q3_deploy/evidence/candidate-guided-validation-2026-10-24.json. The after list contains seven files, but the before list was cropped; a complete before/after retention check is still needed for submission evidence. No corruption was deliberately introduced before this restore, and only sampled business data was checked afterward. Existing containers/volumes were reused, so this is not final clean-clone verification. These observations update the candidate's practical experience; Q3 packaging/publication and final remote CI verification remain outstanding. Further independent practice is needed with Docker networking, operational commands and backup/restore.
+
+### Measured backup retention listing
+
+Nine online backups were made in the isolated validation volume. The ninth call produced the following complete listing; it removed the oldest listed backup and retained the new one.
+
+| Before ninth backup | After ninth backup |
+|---|---|
+| backup-20261024T141128656296Z-f6ac4eb9.sqlite3 | backup-20261024T141128661260Z-700473f0.sqlite3 |
+| backup-20261024T141128661260Z-700473f0.sqlite3 | backup-20261024T141128666006Z-896bc1d1.sqlite3 |
+| backup-20261024T141128666006Z-896bc1d1.sqlite3 | backup-20261024T141128671324Z-2acc8715.sqlite3 |
+| backup-20261024T141128671324Z-2acc8715.sqlite3 | backup-20261024T141128676003Z-b575680a.sqlite3 |
+| backup-20261024T141128676003Z-b575680a.sqlite3 | backup-20261024T141128681051Z-617bcb4c.sqlite3 |
+| backup-20261024T141128681051Z-617bcb4c.sqlite3 | backup-20261024T141128686313Z-3bea951f.sqlite3 |
+| backup-20261024T141128686313Z-3bea951f.sqlite3 | backup-20261024T141128691807Z-1ec7b874.sqlite3 |
+
+## Q3 design and publication-source validation
+
+The API runs as an unprivileged user with one worker. Compose stores SQLite under /data in a named volume and starts dependent services only after their health checks pass. nginx preserves the complete /api/ and /ocr/ paths. Its 6 MiB request-body limit allows multipart framing around the application's 5 MiB file limit. Validation exercised both paths, an over-limit file returning 413 from the API, and a 7 MiB body returning 413 from nginx. The 3-second connect and 15-second read/send proxy timeouts bound inactive upstream operations; background OCR/delivery calls use the application's own shorter HTTPX timeouts and do not keep the process endpoint open.
+
+Codex's publication-source run used a Git archive and a newly created isolated Compose project/volume. All 35 tests passed under Python 3.12.15 (one Starlette TestClient deprecation warning), including first-start seeding and preservation of existing data. The required bash smoke wrapper exercises a separate uploaded batch. The six row failures seen in the earlier default-settings smoke were not individually classified; this is distinct from the controlled Q2 fault-injection report. Final smoke results are recorded in publication-smoke.json.
+
+Online backups use SQLite's backup API so committed WAL contents are included, then check integrity before renaming a temporary file. Restoration to a new temporary database returned integrity_check=ok and matched ordered contents of batches, cases and exports. The complete before/after retention listing above demonstrates removing the oldest of eight completed backups. Backups share the database volume and are not an off-machine disaster-recovery solution. Restoring an older database does not undo external receiver side effects; staff must reconcile receipts before redelivery.
+
+Source hashes, test summary, smoke output and operations results are in q3_deploy/evidence/publication-validation.json, publication-smoke.json and publication-operations.json. These agent-run checks are separate from candidate screenshots. A final clone from GitHub and remote Actions still need verification after publication.
+
+### First-start seeding and limits
+
+Final requirement review identified that the previous deployment required the smoke driver to upload the sample. Codex added app.seed to fulfill seeded startup: before Uvicorn starts, a transaction imports the supplied CSV only if the database has no batches. A fresh volume receives one batch with 43 pending cases and seven rejection reasons; its ID is printed in startup logs. An existing user batch prevents import, and restart does not overwrite review/OCR progress. This affects the Docker entry command, not normal local API startup. The smoke script uploads its own additional batch. The candidate has been informed but has not yet reviewed this final addition, so seed.py and its two tests explicitly remain AI-generated code requiring candidate review.
+
+Dependencies at the top level are pinned, but transitive versions and base image tags are not fully locked. Multiple API workers, durable receiver idempotency storage, off-host backups and production authentication are outside this exercise implementation. Operational commands are documented and have been practiced with guidance; independent fluency is not claimed.

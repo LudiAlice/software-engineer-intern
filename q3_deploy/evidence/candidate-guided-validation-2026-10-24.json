@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-24",
+  "evidence_source": "Candidate-supplied terminal and HTTP response screenshots in the learning conversation; not a captured automated report",
+  "operator": "Candidate, following Codex-provided commands and explanations",
+  "checkout": "Local full learning checkout; not the final publication checkout or a clean clone",
+  "local_run": {
+    "python": "3.14",
+    "manual_batch_id": "0497e4ec-fd38-4561-863c-720a2bac0b2c",
+    "accepted": 43,
+    "rejected": 7,
+    "ocr_done_before_review": 37,
+    "ocr_failed": 6,
+    "manual_export_id": "51b338eb-d0fc-4335-9eeb-ffb876e89a8e",
+    "manual_export_case_count": 1,
+    "delivery_attempts": 2,
+    "receiver_records_for_export": 1,
+    "download_opened_by_candidate": true,
+    "separate_smoke_run_exported": 38
+  },
+  "container_run": {
+    "image_python": "3.12, configured in Dockerfile",
+    "all_four_services_healthy": true,
+    "entry_point": "Smoke driver executed inside api with --base http://nginx",
+    "smoke_driver_completed": true,
+    "export_id": "236004da-065f-4a4c-be62-ecfaf65eb75a",
+    "final_pending": 0,
+    "final_ocr_failed": 6,
+    "final_exported": 37,
+    "delivery_attempts": 2,
+    "receipt_deduplicated": true
+  },
+  "backup_restore": {
+    "backup_file": "backup-20261024T135048736350Z-ecabe311.sqlite3",
+    "after_files": [
+      "backup-20261015T034332167367Z-f9566412.sqlite3",
+      "backup-20261015T034332171879Z-271aa98a.sqlite3",
+      "backup-20261015T034332176426Z-751f1508.sqlite3",
+      "backup-20261015T034332180591Z-b0d5fbba.sqlite3",
+      "backup-20261015T034332185362Z-946a6a3a.sqlite3",
+      "backup-20261015T034332190088Z-2da62755.sqlite3",
+      "backup-20261024T135048736350Z-ecabe311.sqlite3"
+    ],
+    "full_before_listing_visible": false,
+    "api_stopped_for_restore": true,
+    "source": "The named backup opened read-only",
+    "destination": "/data/app.db",
+    "integrity_check": "ok",
+    "ready_after_restart": true,
+    "restored_export_status": "delivered",
+    "restored_export_case_count": 37,
+    "restored_export_delivery_attempts": 2
+  },
+  "limitations": [
+    "Existing containers and persistent storage were reused; this is not clean-clone validation.",
+    "The screenshots do not contain a complete before-backup listing, so they alone do not establish which oldest file was removed.",
+    "Restoration used a recent backup without deliberately damaging or changing the database first; it demonstrates execution, integrity and sampled business-data availability, not exhaustive recovery under corruption.",
+    "The six OCR failures were not individually diagnosed during this candidate run.",
+    "This evidence does not establish remote GitHub Actions success or independent authorship/mastery."
+  ]
+}

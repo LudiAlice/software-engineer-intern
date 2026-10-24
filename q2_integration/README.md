@@ -17,11 +17,36 @@ python3 mock_onboarding/server.py
 ```
 
 ```bash
-cd q1_api
-uvicorn app.main:app --reload
+python3 -m uvicorn app.main:app --app-dir q1_api --host 127.0.0.1 --port 8000
 ```
 
-Configure the API to use `http://localhost:9100/ocr/parse` and `http://localhost:9200/ingest`. Document the API configuration method after implementation.
+The defaults already point to the two local mock services. Use one API worker.
+
+On Windows PowerShell, create a virtual environment once from the repository root
+(Python 3.12 matches Docker and CI; Python 3.10+ is required):
+
+```powershell
+py -3.12 -m venv .venv-local
+.\.venv-local\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Select an installed supported Python version if 3.12 is unavailable. The candidate's
+local practice used 3.14; that does not replace validation under container Python 3.12.
+In three separate terminals, all at the repository root:
+
+```powershell
+.\.venv-local\Scripts\python.exe mock_ocr/server.py
+```
+
+```powershell
+.\.venv-local\Scripts\python.exe mock_onboarding/server.py
+```
+
+```powershell
+.\.venv-local\Scripts\python.exe -m uvicorn app.main:app --app-dir q1_api --host 127.0.0.1 --port 8000
+```
+
+Keep these terminals running. Open http://127.0.0.1:8000/api/docs; `/` has no route.
 
 Verify one batch through import, background OCR, both review stages, export, and submission to the account-opening service. Record retry and recovery evidence in [REFLECTION.md](../REFLECTION.md).
 

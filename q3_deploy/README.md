@@ -19,11 +19,26 @@ The Compose build context for the API is the repository root. Dockerfile `COPY` 
 Run these commands from `q3_deploy/` after completing the deployment files:
 
 ```bash
-cp .env.example .env
-docker compose up --build
+docker compose --env-file .env.example up --build -d --wait
 ```
 
-Set the database and service addresses in `.env` for the implemented configuration. Keep `.env` out of Git. Record the configuration steps and startup checks in [RUNBOOK.md](RUNBOOK.md).
+The non-secret example values work as provided; no local `.env` is needed.
+Equivalent defaults also support `docker compose up --build` in this directory.
+On first container startup, the supplied CSV is imported if the database has no
+batches (43 pending cases and seven rejected rows). The seed batch ID is printed
+in API startup logs. Existing databases are left unchanged on restart. The smoke
+script uploads its own separate batch, then drives that batch through delivery.
+
+Windows PowerShell users can stay at the repository root:
+
+```powershell
+docker compose --env-file q3_deploy/.env.example -f q3_deploy/docker-compose.yml up --build -d --wait
+docker compose --env-file q3_deploy/.env.example -f q3_deploy/docker-compose.yml ps
+docker compose --env-file q3_deploy/.env.example -f q3_deploy/docker-compose.yml exec -T api python q3_deploy/scripts/smoke_test.py --base http://nginx
+```
+
+The final command is the same driver used by `scripts/smoke_test.sh`. API docs:
+http://127.0.0.1:8080/api/docs. Backup/restore commands are in [RUNBOOK.md](RUNBOOK.md).
 
 After startup, run the smoke test in another terminal from `q3_deploy/`:
 

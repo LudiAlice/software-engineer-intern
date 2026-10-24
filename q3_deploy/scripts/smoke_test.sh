@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
-# Drives one batch end-to-end through nginx:
-# upload -> process -> review -> export -> deliver, printing each step.
-# `bash scripts/smoke_test.sh` must pass right after a clean
-# `docker compose up --build`.
 set -euo pipefail
-BASE=${BASE:-http://localhost:8080}
-# TODO: upload data/account_applications.csv, process the batch, approve a
-# case through both stages, export, then print the batch counts.
+cd "$(dirname "$0")/.."
+# The Python driver runs inside api; requests still go through nginx.
+docker compose --env-file .env.example exec -T api python q3_deploy/scripts/smoke_test.py --base "${BASE:-http://nginx}"

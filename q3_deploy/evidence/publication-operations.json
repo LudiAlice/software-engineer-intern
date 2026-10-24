@@ -1,0 +1,52 @@
+{
+  "python": "3.12.15 (main, Oct 21 2026, 01:08:20) [GCC 14.2.0]",
+  "operator": "Codex",
+  "source_tree": "a97cdd62a061e297775b36be988383ee4b76fad3",
+  "routing": {
+    "ready": {
+      "ready": true
+    },
+    "ocr_route_missing_fields": 400,
+    "api_file_limit": 413,
+    "nginx_body_limit": 413
+  },
+  "retention": {
+    "backup": "backup-20261024T141128691807Z-1ec7b874.sqlite3",
+    "before": [
+      "backup-20261024T141128656296Z-f6ac4eb9.sqlite3",
+      "backup-20261024T141128661260Z-700473f0.sqlite3",
+      "backup-20261024T141128666006Z-896bc1d1.sqlite3",
+      "backup-20261024T141128671324Z-2acc8715.sqlite3",
+      "backup-20261024T141128676003Z-b575680a.sqlite3",
+      "backup-20261024T141128681051Z-617bcb4c.sqlite3",
+      "backup-20261024T141128686313Z-3bea951f.sqlite3"
+    ],
+    "after": [
+      "backup-20261024T141128661260Z-700473f0.sqlite3",
+      "backup-20261024T141128666006Z-896bc1d1.sqlite3",
+      "backup-20261024T141128671324Z-2acc8715.sqlite3",
+      "backup-20261024T141128676003Z-b575680a.sqlite3",
+      "backup-20261024T141128681051Z-617bcb4c.sqlite3",
+      "backup-20261024T141128686313Z-3bea951f.sqlite3",
+      "backup-20261024T141128691807Z-1ec7b874.sqlite3"
+    ]
+  },
+  "restore_to_new_database": {
+    "integrity": "ok",
+    "all_tables_equal": true,
+    "tables": {
+      "batches": {
+        "rows": 2,
+        "sha256_of_ordered_rows": "5ac462ade2b3fcf74dac6cec3d0379deb9bd24c0afce824fa2795b23c7696d4a"
+      },
+      "cases": {
+        "rows": 86,
+        "sha256_of_ordered_rows": "329e377faa49fd874c646ac13c2ff74fc968e7ae1bf5d3e2be5ab7c9ad67d75d"
+      },
+      "exports": {
+        "rows": 1,
+        "sha256_of_ordered_rows": "a34f68eb9eebff85c2a30fb0d89e0511808f1ab57434b5c597f8b7ad9258785a"
+      }
+    }
+  }
+}
