@@ -25,3 +25,8 @@ See AI_LOG.md for material AI contributions. No actual local .env file is includ
 - Python sqlite3 backup API: live consistent copies, integrity checks and restore; pathlib/datetime handle timestamped files and seven-file retention.
 - Git Bash: required smoke shell wrapper executed on Windows; PowerShell commands invoke the same Python drivers.
 - OpenAI Codex: configuration/scripts, guided teaching, publication assembly, container tests and evidence recording. Candidate-operated steps are identified separately in AI_LOG.md and the evidence report.
+
+## Optional CI
+
+- GitHub Actions, actions/checkout and actions/setup-python: tests and Compose image builds on each push/PR, using Python 3.12 on Ubuntu 24.04. Official actions are pinned to verified commit IDs and checkout does not persist credentials.
+- OpenAI Codex: workflow implementation, explanation, local validation, staged publication and checking the remote result for the final commit. No GitHub success is inferred from local checks.

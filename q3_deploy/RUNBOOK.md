@@ -69,3 +69,13 @@ as the Compose prefix for the commands above. For online backup, append
 `exec -T api python -m app.backup`; for smoke testing, append
 `exec -T api python q3_deploy/scripts/smoke_test.py --base http://nginx`.
 The shell wrappers and these PowerShell commands call the same Python modules.
+
+## CI and submission check
+
+The optional workflow runs pytest, validates Compose and builds the three project
+images on push/PR using Python 3.12 on Ubuntu 24.04. It does not deploy or run the
+end-to-end smoke test. In GitHub Actions, confirm the successful run's commit SHA
+equals the final submitted SHA. Local green tests are not a remote CI result.
+From a fresh clone, run the startup and smoke commands above and the root pytest
+command. Preserve current data volumes; use a distinct COMPOSE_PROJECT_NAME and
+HTTP_PORT when validating alongside an existing deployment.
